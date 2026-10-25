@@ -186,6 +186,15 @@ case "$ACTION" in
     set_model_invocation "enable"
     show_status
     ;;
+  update)
+    ensure_pstack_installed
+    echo "[Update] Pulling latest upstream pstack..."
+    (cd "$PSTACK_ROOT" && git checkout -- skills/ 2>/dev/null || true && git pull --ff-only)
+    sync_skills
+    sync_rules
+    set_model_invocation "enable"
+    show_status
+    ;;
   disable-auto)
     rm -f "$DEV_ROOT_AGENTS_MD" "$DEV_ROOT_CLAUDE_MD" "$AGY_GEMINI_MD" "$AGY_AGENTS_MD" "$CURSOR_AUTO_RULE" "$CLAUDE_GLOBAL_MD" "$CODEX_GLOBAL_MD"
     show_status
@@ -199,3 +208,4 @@ case "$ACTION" in
     echo "Installed AGENTS.md, CLAUDE.md, and .github/copilot-instructions.md to $TARGET_PATH"
     ;;
 esac
+

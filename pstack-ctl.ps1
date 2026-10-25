@@ -1,6 +1,6 @@
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("install", "status", "sync", "enable-auto", "disable-auto", "init-project", "help")]
+    [ValidateSet("install", "update", "status", "sync", "enable-auto", "disable-auto", "init-project", "help")]
     [string]$Action = "status",
 
     [Parameter(Position = 1)]
@@ -328,6 +328,7 @@ function Show-Status {
 
     Write-Host "`nQuick Commands:" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 install                 # First-time setup (clones pstack if missing & enables auto-mode)" -ForegroundColor Gray
+    Write-Host "  .\pstack-ctl.ps1 update                  # Pull latest upstream pstack updates & re-sync without git conflicts" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 status                  # Check system status" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 sync                    # Sync rules & repair skill links across IDEs" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 enable-auto             # Enable automatic pstack orchestration" -ForegroundColor Gray
@@ -335,8 +336,36 @@ function Show-Status {
     Write-Host "  .\pstack-ctl.ps1 init-project <Path>     # Install AGENTS.md, CLAUDE.md & Copilot rules to a project`n" -ForegroundColor Gray
 }
 
+function Update-PstackUpstream {
+    Ensure-PstackInstalled
+    Write-Host "`n[Update] Updating upstream pstack at $PstackRoot..." -ForegroundColor Cyan
+
+    $lockedBefore = @(Select-String -Path "$PstackSkillsRoot\*\SKILL.md" -Pattern "^disable-model-invocation:\s*true" -ErrorAction SilentlyContinue)
+    $wasAutoEnabled = ($lockedBefore.Count -eq 0)
+
+    Push-Location $PstackRoot
+    try {
+        # Reset local SKILL.md unlock edits so git pull never conflicts
+        git checkout -- skills/ 2>$null
+        git pull --ff-only
+    } finally {
+        Pop-Location
+    }
+
+    Sync-SkillLinks
+    Sync-AutoRules
+    if ($wasAutoEnabled) {
+        Set-ModelInvocation -EnableAuto $true
+    }
+    Write-Host "  -> Upstream pstack updated and re-synced cleanly!" -ForegroundColor Green
+}
+
 switch ($Action) {
     "status" {
+        Show-Status
+    }
+    "update" {
+        Update-PstackUpstream
         Show-Status
     }
     "sync" {
