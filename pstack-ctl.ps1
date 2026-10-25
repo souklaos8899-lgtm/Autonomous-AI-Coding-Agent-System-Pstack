@@ -1,6 +1,6 @@
 param(
     [Parameter(Position = 0)]
-    [ValidateSet("install", "update", "status", "sync", "enable-auto", "disable-auto", "init-project", "help")]
+    [ValidateSet("install", "update", "status", "sync", "enable-auto", "disable-auto", "enable-autoupdate", "disable-autoupdate", "init-project", "help")]
     [string]$Action = "status",
 
     [Parameter(Position = 1)]
@@ -56,6 +56,9 @@ $DevRootAgentsMd  = Join-Path $ParentDevRoot "AGENTS.md"
 $DevRootClaudeMd  = Join-Path $ParentDevRoot "CLAUDE.md"
 $LocalAgentsMd    = Join-Path $AutoAiRoot "AGENTS.md"
 $LocalClaudeMd    = Join-Path $AutoAiRoot "CLAUDE.md"
+$ScheduledTaskName = "AutoAI_pstack_AutoUpdate"
+$StartupDir       = [Environment]::GetFolderPath('Startup')
+$StartupVbsFile   = Join-Path $StartupDir "AutoAI_pstack_AutoUpdate.vbs"
 
 function Ensure-PstackInstalled {
     if (-not (Test-Path $PstackSkillsRoot)) {
@@ -326,9 +329,15 @@ function Show-Status {
         Write-Host "[7] pstack Model Config      : Default (Run /setup-pstack to customize)" -ForegroundColor Yellow
     }
 
+    # 5. Check Auto-Update Scheduled Task / Startup Hook
+    $taskExists = ($null -ne (Get-ScheduledTask -TaskName $ScheduledTaskName -ErrorAction SilentlyContinue)) -or (Test-Path $StartupVbsFile)
+    Write-Host ("[8] Auto-Update Scheduler    : {0}" -f $(if ($taskExists) { "ACTIVE (Background update daily & at logon)" } else { "INACTIVE" })) -ForegroundColor $(if ($taskExists) { "Green" } else { "Yellow" })
+
     Write-Host "`nQuick Commands:" -ForegroundColor Gray
-    Write-Host "  .\pstack-ctl.ps1 install                 # First-time setup (clones pstack if missing & enables auto-mode)" -ForegroundColor Gray
-    Write-Host "  .\pstack-ctl.ps1 update                  # Pull latest upstream pstack updates & re-sync without git conflicts" -ForegroundColor Gray
+    Write-Host "  .\pstack-ctl.ps1 install                 # First-time setup (clones pstack, enables auto-mode & auto-update)" -ForegroundColor Gray
+    Write-Host "  .\pstack-ctl.ps1 update                  # Pull latest upstream pstack updates & re-sync now" -ForegroundColor Gray
+    Write-Host "  .\pstack-ctl.ps1 enable-autoupdate       # Enable background automatic pstack updates" -ForegroundColor Gray
+    Write-Host "  .\pstack-ctl.ps1 disable-autoupdate      # Disable background automatic pstack updates" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 status                  # Check system status" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 sync                    # Sync rules & repair skill links across IDEs" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 enable-auto             # Enable automatic pstack orchestration" -ForegroundColor Gray
@@ -336,28 +345,59 @@ function Show-Status {
     Write-Host "  .\pstack-ctl.ps1 init-project <Path>     # Install AGENTS.md, CLAUDE.md & Copilot rules to a project`n" -ForegroundColor Gray
 }
 
+function Register-AutoUpdateTask {
+    $scriptPath = Join-Path $AutoAiRoot "pstack-ctl.ps1"
+    $actionArgs = "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File `"$scriptPath`" update"
+
+    # 1. Daily Scheduled Task (User-level, no Admin required)
+    $taskAction = New-ScheduledTaskAction -Execute "powershell.exe" -Argument $actionArgs
+    $triggerDaily = New-ScheduledTaskTrigger -Daily -At 10:00AM
+    $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -StartWhenAvailable -RunOnlyIfNetworkAvailable
+    Register-ScheduledTask -TaskName $ScheduledTaskName -Action $taskAction -Trigger $triggerDaily -Settings $settings -Description "Automatically pulls latest upstream pstack skills and syncs IDE rules." -Force | Out-Null
+
+    # 2. User Startup hidden runner (runs silently at Windows logon without needing Admin privileges)
+    $vbsContent = "CreateObject(`"WScript.Shell`").Run `"powershell.exe $actionArgs`", 0, False"
+    [System.IO.File]::WriteAllText($StartupVbsFile, $vbsContent, [System.Text.UTF8Encoding]::new($false))
+
+    Write-Host "  -> Enabled background Auto-Update (Daily at 10:00 AM + Windows Logon)" -ForegroundColor Green
+}
+
+function Unregister-AutoUpdateTask {
+    if (Get-ScheduledTask -TaskName $ScheduledTaskName -ErrorAction SilentlyContinue) {
+        Unregister-ScheduledTask -TaskName $ScheduledTaskName -Confirm:$false
+    }
+    if (Test-Path $StartupVbsFile) {
+        Remove-Item $StartupVbsFile -Force
+    }
+    Write-Host "  -> Disabled background Auto-Update" -ForegroundColor Yellow
+}
+
 function Update-PstackUpstream {
     Ensure-PstackInstalled
-    Write-Host "`n[Update] Updating upstream pstack at $PstackRoot..." -ForegroundColor Cyan
+    Write-Host "`n[Update] Checking upstream pstack at $PstackRoot..." -ForegroundColor Cyan
 
     $lockedBefore = @(Select-String -Path "$PstackSkillsRoot\*\SKILL.md" -Pattern "^disable-model-invocation:\s*true" -ErrorAction SilentlyContinue)
     $wasAutoEnabled = ($lockedBefore.Count -eq 0)
 
     Push-Location $PstackRoot
     try {
-        # Reset local SKILL.md unlock edits so git pull never conflicts
-        git checkout -- skills/ 2>$null
-        git pull --ff-only
+        # Fetch first to verify network connectivity before resetting local working tree
+        git fetch origin 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            git checkout -- skills/ 2>$null
+            git merge --ff-only 2>$null
+        } else {
+            Write-Warning "Network unreachable or git fetch failed; keeping existing pstack files."
+        }
     } finally {
         Pop-Location
+        Sync-SkillLinks
+        Sync-AutoRules
+        if ($wasAutoEnabled) {
+            Set-ModelInvocation -EnableAuto $true
+        }
     }
-
-    Sync-SkillLinks
-    Sync-AutoRules
-    if ($wasAutoEnabled) {
-        Set-ModelInvocation -EnableAuto $true
-    }
-    Write-Host "  -> Upstream pstack updated and re-synced cleanly!" -ForegroundColor Green
+    Write-Host "  -> Upstream pstack check & sync complete!" -ForegroundColor Green
 }
 
 switch ($Action) {
@@ -366,6 +406,14 @@ switch ($Action) {
     }
     "update" {
         Update-PstackUpstream
+        Show-Status
+    }
+    "enable-autoupdate" {
+        Register-AutoUpdateTask
+        Show-Status
+    }
+    "disable-autoupdate" {
+        Unregister-AutoUpdateTask
         Show-Status
     }
     "sync" {
@@ -377,20 +425,23 @@ switch ($Action) {
         Sync-SkillLinks
         Sync-AutoRules
         Set-ModelInvocation -EnableAuto $true
+        Register-AutoUpdateTask
         Show-Status
     }
     "enable-auto" {
         Sync-SkillLinks
         Sync-AutoRules
         Set-ModelInvocation -EnableAuto $true
+        Register-AutoUpdateTask
         Show-Status
     }
     "disable-auto" {
         Set-ModelInvocation -EnableAuto $false
+        Unregister-AutoUpdateTask
         foreach ($f in @($DevRootAgentsMd, $DevRootClaudeMd, $AgyGeminiMd, $AgyAgentsMd, $CursorAutoRule, $ClaudeGlobalMd, $CodexGlobalMd)) {
             if (Test-Path $f) { Remove-Item $f -Force }
         }
-        Write-Host "Removed global auto-orchestrator rules. You can still invoke /poteto-mode manually." -ForegroundColor Yellow
+        Write-Host "Removed global auto-orchestrator rules and auto-update scheduler. You can still invoke /poteto-mode manually." -ForegroundColor Yellow
         Show-Status
     }
     "init-project" {

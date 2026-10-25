@@ -184,18 +184,32 @@ case "$ACTION" in
     sync_skills
     sync_rules
     set_model_invocation "enable"
+    (crontab -l 2>/dev/null | grep -v "auto_ai_pstack_autoupdate"; echo "0 10 * * * \"$AUTO_AI_ROOT/pstack-ctl.sh\" update >/dev/null 2>&1 # auto_ai_pstack_autoupdate") | crontab - 2>/dev/null || true
+    show_status
+    ;;
+  enable-autoupdate)
+    (crontab -l 2>/dev/null | grep -v "auto_ai_pstack_autoupdate"; echo "0 10 * * * \"$AUTO_AI_ROOT/pstack-ctl.sh\" update >/dev/null 2>&1 # auto_ai_pstack_autoupdate") | crontab - 2>/dev/null || true
+    echo "  -> Enabled daily background auto-update cron job."
+    show_status
+    ;;
+  disable-autoupdate)
+    (crontab -l 2>/dev/null | grep -v "auto_ai_pstack_autoupdate") | crontab - 2>/dev/null || true
+    echo "  -> Disabled daily background auto-update cron job."
     show_status
     ;;
   update)
     ensure_pstack_installed
     echo "[Update] Pulling latest upstream pstack..."
-    (cd "$PSTACK_ROOT" && git checkout -- skills/ 2>/dev/null || true && git pull --ff-only)
+    if (cd "$PSTACK_ROOT" && git fetch origin 2>/dev/null); then
+      (cd "$PSTACK_ROOT" && git checkout -- skills/ 2>/dev/null || true && git merge --ff-only 2>/dev/null || true)
+    fi
     sync_skills
     sync_rules
     set_model_invocation "enable"
     show_status
     ;;
   disable-auto)
+    (crontab -l 2>/dev/null | grep -v "auto_ai_pstack_autoupdate") | crontab - 2>/dev/null || true
     rm -f "$DEV_ROOT_AGENTS_MD" "$DEV_ROOT_CLAUDE_MD" "$AGY_GEMINI_MD" "$AGY_AGENTS_MD" "$CURSOR_AUTO_RULE" "$CLAUDE_GLOBAL_MD" "$CODEX_GLOBAL_MD"
     show_status
     ;;
