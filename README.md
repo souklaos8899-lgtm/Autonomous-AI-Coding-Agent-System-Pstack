@@ -1,10 +1,93 @@
 # Autonomous AI Coding Agent System + pstack
 
-ระบบเชื่อมต่อและสั่งการอัตโนมัติ (**Auto-Orchestrator & Control Center**) ที่เปลี่ยนให้ **Antigravity**, **Cursor**, **Claude Code**, **Codex**, และ **VS Code** ทำงานเป็น **Autonomous AI Coding Agent** โดยเรียกใช้เวิร์กโฟลว์วิศวกรรมของ **[pstack (`poteto-mode`)](https://github.com/backnotprop/pstack)** เองอัตโนมัติโดยไม่ต้องพิมพ์คำสั่ง `/poteto-mode` นำหน้าทุกครั้ง
+> 🌐 **Language / ภาษา:** [**English**](#english-documentation) | [**ภาษาไทย**](#เอกสารภาษาไทย) | [Standalone English (`README.en.md`)](./README.en.md)
 
 ---
 
-## ✨ คุณสมบัติหลัก (Key Features)
+<a id="english-documentation"></a>
+
+## 🇬🇧 English Documentation
+
+An **Auto-Orchestrator & Control Center** that turns **Antigravity**, **Cursor**, **Claude Code**, **Codex**, and **VS Code (GitHub Copilot)** into a full **Autonomous AI Coding Agent System** powered by **[pstack (`poteto-mode`)](https://github.com/backnotprop/pstack)**—automatically routing engineering tasks through rigorous playbooks and multi-agent workflows without requiring manual `/poteto-mode` slash commands on every prompt.
+
+### ✨ Key Features
+
+- **Zero-Slash-Command Auto-Routing:** Evaluates every prompt automatically. Software engineering tasks (features, bug fixes, refactors, architecture, code reviews) automatically activate `poteto-mode`, select the matching playbook, and spawn specialized subagents. Casual questions receive direct, concise answers (`unslop`).
+- **Multi-IDE & Multi-Harness Support:** Syncs all 52 skills and always-on rules across **Antigravity**, **Cursor**, **Claude Code**, **Codex**, and **VS Code (GitHub Copilot)** in a single command.
+- **Auto-Install Upstream `pstack`:** If `pstack` is not found on a machine, `install` automatically clones `backnotprop/pstack` into `./vendor/pstack` and generates default role-to-model settings.
+- **Background Auto-Update Scheduler:** Automatically pulls upstream `pstack` updates in the background (daily and at logon via Windows Task Scheduler / Startup or macOS/Linux Cron), conflict-free and offline-safe.
+- **Cross-Platform & Zero Hardcoded Paths:** Works out of the box on **Windows (`pstack-ctl.ps1`)** and **macOS / Linux (`pstack-ctl.sh`)**.
+- **Built-in `deslop` Custom Skill:** Ships with a ready-to-use `deslop` skill to strip AI code slop, dead code, and redundant comments before committing.
+
+### 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    User["User sends normal prompt in IDE chat"] --> AutoRule["Always-On Auto-Orchestrator Rule<br/>(GEMINI.md / AGENTS.md / CLAUDE.md / .cursor/rules)"]
+    AutoRule --> Decision{"Automatic Task Triage"}
+    
+    Decision -->|Casual Q&A / Simple chat| Direct["Direct, concise response (unslop)"]
+    Decision -->|Engineering: Feature / Bug / Refactor / Review| PotetoMode["Auto-activate poteto-mode"]
+    
+    PotetoMode --> Playbook["Select matching Playbook<br/>(bug-fix, feature, refactoring, investigation, etc.)"]
+    Playbook --> Subagents["Delegate to Subagents by Role<br/>using ~/.agents/pstack-models.md"]
+    
+    Subagents --> Step1["1. Explore & Impact Analysis (/how, /blast-radius)"]
+    Step1 --> Step2["2. Domain Model & Architecture (/architect, model-the-domain)"]
+    Step2 --> Step3["3. Implementation & TDD (/tdd, /swarm, /arena)"]
+    Step3 --> Step4["4. Adversarial Review & Runtime Proof (/interrogate, prove-it-works)"]
+```
+
+### 🚀 Quick Start
+
+#### 1. Clone the repository
+```bash
+git clone https://github.com/souklaos8899-lgtm/Autonomous-AI-Coding-Agent-System-Pstack.git
+cd Autonomous-AI-Coding-Agent-System-Pstack
+```
+
+#### 2. Run the 1-command installer
+
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy Bypass -File .\pstack-ctl.ps1 install
+```
+
+**macOS / Linux / Git Bash:**
+```bash
+chmod +x ./pstack-ctl.sh
+./pstack-ctl.sh install
+```
+
+### 🛠️ CLI Commands (`pstack-ctl`)
+
+| Windows (PowerShell) | macOS / Linux | Description |
+| :--- | :--- | :--- |
+| `.\pstack-ctl.ps1 install` | `./pstack-ctl.sh install` | First-time setup: clones `pstack` if missing, links all 52 skills, enables auto-mode, and registers background auto-update. |
+| `.\pstack-ctl.ps1 status` | `./pstack-ctl.sh status` | Check skill symlinks, IDE auto-rules, model budget, and auto-update scheduler status. |
+| `.\pstack-ctl.ps1 update` | `./pstack-ctl.sh update` | Pull latest upstream `pstack` updates without Git conflicts, re-link skills, and re-apply auto-invocation. |
+| `.\pstack-ctl.ps1 enable-autoupdate` | `./pstack-ctl.sh enable-autoupdate` | Enable silent background auto-updates (daily & at logon). |
+| `.\pstack-ctl.ps1 disable-autoupdate` | `./pstack-ctl.sh disable-autoupdate` | Disable background auto-updates. |
+| `.\pstack-ctl.ps1 enable-auto` | `./pstack-ctl.sh enable-auto` | Enable automatic `pstack` orchestration across all projects. |
+| `.\pstack-ctl.ps1 disable-auto` | `./pstack-ctl.sh disable-auto` | Disable auto-mode (revert to manual `/poteto-mode` invocation). |
+| `.\pstack-ctl.ps1 sync` | `./pstack-ctl.sh sync` | Sync changes after editing `rules/auto-orchestrator.md` or adding skills in `custom-skills/`. |
+| `.\pstack-ctl.ps1 init-project <Path>` | `./pstack-ctl.sh init-project <Path>` | Copy `AGENTS.md`, `CLAUDE.md`, and `.github/copilot-instructions.md` into a specific project directory. |
+
+### ⚙️ Customization
+
+1. **Customize Auto-Routing Rules:** Edit [`rules/auto-orchestrator.md`](./rules/auto-orchestrator.md) and run `.\pstack-ctl.ps1 sync`.
+2. **Configure Per-Role Models:** Edit `~/.agents/pstack-models.md` or run `/setup-pstack` in your IDE chat.
+3. **Add Custom Skills:** Create `custom-skills/<skill-name>/SKILL.md` and run `.\pstack-ctl.ps1 sync`.
+
+---
+
+<a id="เอกสารภาษาไทย"></a>
+
+## 🇹🇭 เอกสารภาษาไทย
+
+ระบบเชื่อมต่อและสั่งการอัตโนมัติ (**Auto-Orchestrator & Control Center**) ที่เปลี่ยนให้ **Antigravity**, **Cursor**, **Claude Code**, **Codex**, และ **VS Code** ทำงานเป็น **Autonomous AI Coding Agent** โดยเรียกใช้เวิร์กโฟลว์วิศวกรรมของ **[pstack (`poteto-mode`)](https://github.com/backnotprop/pstack)** เองอัตโนมัติโดยไม่ต้องพิมพ์คำสั่ง `/poteto-mode` นำหน้าทุกครั้ง
+
+### ✨ คุณสมบัติหลัก
 
 - **Zero-Slash-Command Auto-Routing:** วิเคราะห์คำขอของผู้ใช้ทุกเทิร์น หากเป็นงานวิศวกรรมซอฟต์แวร์ (Feature, Bug Fix, Refactoring, Architecture, Review) ระบบจะเปิดใช้งาน `poteto-mode` เลือก Playbook และแตก Subagents ให้อัตโนมัติ ส่วนคำถามพูดคุยทั่วไปจะตอบตรงประเด็น (`unslop`)
 - **Multi-IDE & Multi-Harness Support:** ซิงค์สกิลทั้ง 52 ตัวและกฎอัตโนมัติเข้าสู่ **Antigravity**, **Cursor**, **Claude Code**, **Codex**, และ **VS Code (GitHub Copilot)** พร้อมกันในคำสั่งเดียว
@@ -13,38 +96,15 @@
 - **Cross-Platform & Zero Hardcoded Paths:** ใช้งานได้กับทุกเครื่องและทุกระบบปฏิบัติการ ทั้งบน **Windows (`pstack-ctl.ps1`)** และ **macOS / Linux (`pstack-ctl.sh`)**
 - **Built-in `deslop` Custom Skill:** มาพร้อมสกิลทำความสะอาดโค้ดขยะ (`deslop`) ก่อนส่งมอบงานในตัว
 
----
+### 🚀 วิธีติดตั้งใช้งาน (Quick Start)
 
-## 🏗️ สถาปัตยกรรมการทำงาน (How It Works)
-
-```mermaid
-flowchart TD
-    User["ผู้ใช้พิมพ์สั่งงานปกติในแชท IDE"] --> AutoRule["Always-On Auto-Orchestrator Rule<br/>(GEMINI.md / AGENTS.md / CLAUDE.md / .cursor/rules)"]
-    AutoRule --> Decision{"คัดกรองประเภทงานอัตโนมัติ"}
-    
-    Decision -->|คำถามทั่วไป / พูดคุยสั้นๆ| Direct["ตอบกลับกระชับ ตรงประเด็น (unslop)"]
-    Decision -->|งานวิศวกรรม: Feature / Bug / Refactor / Review| PotetoMode["เปิดใช้งาน poteto-mode อัตโนมัติ"]
-    
-    PotetoMode --> Playbook["เลือก Playbook ที่ตรงกับงาน<br/>(bug-fix, feature, refactoring, investigation ฯลฯ)"]
-    Playbook --> Subagents["กระจายงานให้ Subagents ตามบทบาท<br/>อ้างอิงโมเดลจาก ~/.agents/pstack-models.md"]
-    
-    Subagents --> Step1["1. สำรวจและวิเคราะห์ผลกระทบ (/how, /blast-radius)"]
-    Step1 --> Step2["2. ออกแบบโครงสร้างข้อมูลและระบบ (/architect, model-the-domain)"]
-    Step2 --> Step3["3. ลงมือเขียนโค้ดและเขียนเทสต์ (/tdd, /swarm, /arena)"]
-    Step3 --> Step4["4. ตรวจสอบจับผิดและพิสูจน์ผลลัพธ์จริง (/interrogate, prove-it-works)"]
-```
-
----
-
-## 🚀 วิธีติดตั้งใช้งาน (Quick Start)
-
-### 1. โคลนโปรเจกต์ลงเครื่อง
+#### 1. โคลนโปรเจกต์ลงเครื่อง
 ```bash
 git clone https://github.com/souklaos8899-lgtm/Autonomous-AI-Coding-Agent-System-Pstack.git
 cd Autonomous-AI-Coding-Agent-System-Pstack
 ```
 
-### 2. รันคำสั่งติดตั้งและเปิดใช้งานอัตโนมัติ (1 คำสั่งจบ)
+#### 2. รันคำสั่งติดตั้งและเปิดใช้งานอัตโนมัติ (1 คำสั่งจบ)
 
 **สำหรับ Windows (PowerShell):**
 ```powershell
@@ -57,15 +117,7 @@ chmod +x ./pstack-ctl.sh
 ./pstack-ctl.sh install
 ```
 
-> **สิ่งที่คำสั่ง `install` ทำให้โดยอัตโนมัติ:**
-> 1. ตรวจหา `pstack` ในเครื่อง (หากไม่มีจะ `git clone` มาไว้ที่ `./vendor/pstack` อัตโนมัติ)
-> 2. สร้างลิงก์สกิลทั้ง 52 ตัวเข้าสู่โฟลเดอร์ Global ของ Antigravity, Cursor, Claude Code, และ Codex
-> 3. ปลดล็อก `disable-model-invocation` เพื่อให้ AI เรียกใช้สกิลของ `pstack` เองได้โดยไม่ต้องพิมพ์ `/...`
-> 4. ติดตั้งกฎควบคุมอัตโนมัติ (`AGENTS.md`, `GEMINI.md`, `CLAUDE.md`, `.mdc`) และเปิดระบบ Auto-Update เบื้องหลัง
-
----
-
-## 🛠️ คำสั่งจัดการระบบ (`pstack-ctl`)
+### 🛠️ คำสั่งจัดการระบบ (`pstack-ctl`)
 
 | คำสั่ง (Windows PowerShell) | คำสั่ง (macOS / Linux) | หน้าที่การทำงาน |
 | :--- | :--- | :--- |
@@ -79,11 +131,7 @@ chmod +x ./pstack-ctl.sh
 | `.\pstack-ctl.ps1 sync` | `./pstack-ctl.sh sync` | ซิงค์กฎใหม่หลังจากที่คุณแก้ไขไฟล์ `rules/auto-orchestrator.md` หรือเพิ่มสกิลใน `custom-skills/` |
 | `.\pstack-ctl.ps1 init-project <Path>` | `./pstack-ctl.sh init-project <Path>` | คัดลอกไฟล์ `AGENTS.md`, `CLAUDE.md`, และ `.github/copilot-instructions.md` ไปใส่ในโฟลเดอร์โปรเจกต์ที่ต้องการ |
 
----
-
-## 💡 ตัวอย่างการทำงานจริงเมื่อติดตั้งเสร็จ (Example Workflows)
-
-คุณสามารถพิมพ์สั่งงานด้วยภาษาคนตามปกติในแชทของ IDE โดยระบบจะเลือกใช้เครื่องมือของ `pstack` เองเบื้องหลัง:
+### 💡 ตัวอย่างการทำงานจริงเมื่อติดตั้งเสร็จ
 
 1. **สั่งสร้างฟีเจอร์ใหม่:**
    > *"ช่วยเพิ่มระบบตั้งค่ารหัสผ่านหมดอายุทุก 90 วัน พร้อมแจ้งเตือนก่อนหมดอายุ 7 วัน"*
@@ -95,34 +143,11 @@ chmod +x ./pstack-ctl.sh
    > *"ช่วยตรวจช่องโหว่ของระบบโอนเงิน และเขียน Unit Test ให้ครบทุกไฟล์ก่อนขึ้น Production"*
    - ระบบปล่อย Subagents รุมตรวจหาช่องโหว่ด้วย `/interrogate` -> กระจาย `swarm workers` เขียนเทสต์ขนานกันด้วย `/swarm` -> ล้างคอมเมนต์และโค้ดขยะด้วย `/no-comments` และ `/deslop`
 
----
+### ⚙️ การปรับแต่งในอนาคต
 
-## ⚙️ การปรับแต่งในอนาคต (Customization Guide)
-
-1. **ปรับเปลี่ยนกติกาการเลือกสกิลอัตโนมัติ:**
-   แก้ไขไฟล์แม่แบบที่ [`rules/auto-orchestrator.md`](./rules/auto-orchestrator.md) แล้วรัน `.\pstack-ctl.ps1 sync` เพื่ออัปเดตไปยังทุก IDE พร้อมกัน
-2. **ปรับแต่งโมเดลของแต่ละบทบาท (Subagent Models):**
-   แก้ไขไฟล์ `~/.agents/pstack-models.md` หรือพิมพ์ `/setup-pstack` ในแชทของ IDE
-3. **เพิ่มสกิลส่วนตัว (Custom Skills):**
-   สร้างโฟลเดอร์สกิลใหม่ใน [`custom-skills/<skill-name>/SKILL.md`](./custom-skills/README.md) แล้วรัน `.\pstack-ctl.ps1 sync`
-
----
-
-## 📁 โครงสร้างโปรเจกต์ (Repository Structure)
-
-```text
-Autonomous-AI-Coding-Agent-System-Pstack/
-├── custom-skills/
-│   ├── deslop/
-│   │   └── SKILL.md           # สกิลทำความสะอาดโค้ดขยะก่อน Commit
-│   └── README.md              # คู่มือการเพิ่มสกิลส่วนตัว
-├── rules/
-│   └── auto-orchestrator.md   # ไฟล์แม่แบบกฎอัตโนมัติ (Master Rule Template)
-├── pstack-ctl.ps1             # สคริปต์ควบคุมสำหรับ Windows PowerShell
-├── pstack-ctl.sh              # สคริปต์ควบคุมสำหรับ macOS / Linux / Git Bash
-├── .gitignore
-└── README.md
-```
+1. **ปรับเปลี่ยนกติกาการเลือกสกิลอัตโนมัติ:** แก้ไขไฟล์ [`rules/auto-orchestrator.md`](./rules/auto-orchestrator.md) แล้วรัน `.\pstack-ctl.ps1 sync`
+2. **ปรับแต่งโมเดลของแต่ละบทบาท (Subagent Models):** แก้ไขไฟล์ `~/.agents/pstack-models.md` หรือพิมพ์ `/setup-pstack` ในแชทของ IDE
+3. **เพิ่มสกิลส่วนตัว (Custom Skills):** สร้างโฟลเดอร์สกิลใหม่ใน [`custom-skills/<skill-name>/SKILL.md`](./custom-skills/README.md) แล้วรัน `.\pstack-ctl.ps1 sync`
 
 ---
 
