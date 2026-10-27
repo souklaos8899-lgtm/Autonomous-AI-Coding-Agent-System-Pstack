@@ -1,6 +1,6 @@
 # Autonomous AI Coding Agent System + pstack
 
-> 🌐 **Language / ภาษา:** [**English**](#english-documentation) | [**ภาษาไทย**](#เอกสารภาษาไทย) | [Standalone English (`README.en.md`)](./README.en.md)
+> 🌐 **Language / ภาษา:** [**English**](#english-documentation) | [**ภาษาไทย**](#เอกสารภาษาไทย) | [Standalone English (`README.en.md`)](./README.en.md) | [**📖 คู่มือคำสั่งทั้งหมด (`COMMANDS.md`)**](./COMMANDS.md)
 
 ---
 
