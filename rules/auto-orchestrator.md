@@ -37,10 +37,11 @@
    - ใช้ [`swarm`]({{PSTACK_ROOT_URI}}/skills/swarm/SKILL.md) เมื่อต้องกระจาย Subagents ไปทำหลายส่วนพร้อมกัน
    - ใช้ [`arena`]({{PSTACK_ROOT_URI}}/skills/arena/SKILL.md) เมื่อต้องการเปรียบเทียบแนวทางแก้ปัญหาหลายแบบแล้วเลือกสิ่งที่ดีที่สุด
 
-6. **งานตรวจสอบคุณภาพและก่อนส่งมอบ (`Review & Verification`):**
-   - สำหรับการรีวิวโค้ดหรือหาช่องโหว่ ให้ใช้ [`interrogate`]({{PSTACK_ROOT_URI}}/skills/interrogate/SKILL.md)
+6. **งานตรวจสอบคุณภาพ ความปลอดภัย และก่อนส่งมอบ (`Review, Security & Verification`):**
+   - สำหรับการรีวิวโค้ดหรือหาช่องโหว่ทั่วไป ให้ใช้ [`interrogate`]({{PSTACK_ROOT_URI}}/skills/interrogate/SKILL.md)
+   - สำหรับงานที่เกี่ยวกับความปลอดภัย (Auth, Login, สิทธิ์ RBAC, การอัปโหลดไฟล์, ระบบการเงิน, หรือตรวจช่องโหว่ OWASP) ให้เรียกใช้สกิล [`security-audit`](./custom-skills/security-audit/SKILL.md) พร้อมแตก Security Subagent (`Model: "pro"`) มาตรวจสอบและเขียนโค้ดป้องกันเสมอ
    - สำหรับโค้ด TypeScript ให้ยึดตาม [`typescript-best-practices`]({{PSTACK_ROOT_URI}}/skills/typescript-best-practices/SKILL.md) และ [`principle-type-system-discipline`]({{PSTACK_ROOT_URI}}/skills/principle-type-system-discipline/SKILL.md)
-   - ลบคอมเมนต์ขยะที่ไม่จำเป็นตาม [`no-comments`]({{PSTACK_ROOT_URI}}/skills/no-comments/SKILL.md)
+   - ลบคอมเมนต์ขยะที่ไม่จำเป็นตาม [`no-comments`]({{PSTACK_ROOT_URI}}/skills/no-comments/SKILL.md) และ [`deslop`](./custom-skills/deslop/SKILL.md)
 
 ---
 
