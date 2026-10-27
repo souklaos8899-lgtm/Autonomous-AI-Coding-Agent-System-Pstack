@@ -26,9 +26,10 @@
    - กำหนดโครงสร้างข้อมูล (Data Shape / Domain Model) ก่อนเขียนโค้ดตาม [`principle-model-the-domain`]({{PSTACK_ROOT_URI}}/skills/principle-model-the-domain/SKILL.md) และ [`principle-boundary-discipline`]({{PSTACK_ROOT_URI}}/skills/principle-boundary-discipline/SKILL.md)
    - หากเป็นการแก้ไขโค้ดที่ข้ามขอบเขตหลายโมดูลหรือมีผลกระทบกว้าง ให้รัน [`blast-radius`]({{PSTACK_ROOT_URI}}/skills/blast-radius/SKILL.md) และ [`architect`]({{PSTACK_ROOT_URI}}/skills/architect/SKILL.md) ก่อนลงมือแก้
 
-3. **งานปรับโครงสร้างโค้ด (`Refactoring`):**
+3. **งานปรับโครงสร้างโค้ดและจัดระเบียบโฟลเดอร์ (`Refactoring & Project Structure`):**
    - อ่านและทำตาม [`refactoring.md`]({{PSTACK_ROOT_URI}}/skills/poteto-mode/playbooks/refactoring.md) และ [`principle-subtract-before-you-add`]({{PSTACK_ROOT_URI}}/skills/principle-subtract-before-you-add/SKILL.md)
-   - ตรวจสอบผลกระทบด้วย [`blast-radius`]({{PSTACK_ROOT_URI}}/skills/blast-radius/SKILL.md) เพื่อรับประกันว่าพฤติกรรมเดิมไม่พัง
+   - หากเป็นการขึ้นโปรเจกต์ใหม่ จัดระเบียบ Folder Structure หรือวางโครงสร้างตามภาษา/Framework (Next.js, NestJS, Go, Python ฯลฯ) ให้เรียกใช้สกิล [`project-structure`](./custom-skills/project-structure/SKILL.md) ร่วมกับ [`how`]({{PSTACK_ROOT_URI}}/skills/how/SKILL.md) และ [`architect`]({{PSTACK_ROOT_URI}}/skills/architect/SKILL.md)
+   - ตรวจสอบผลกระทบด้วย [`blast-radius`]({{PSTACK_ROOT_URI}}/skills/blast-radius/SKILL.md) เพื่อรับประกันว่า Import และพฤติกรรมเดิมไม่พัง
 
 4. **งานสำรวจและทำความเข้าใจโค้ด (`Investigation`):**
    - เมื่อผู้ใช้ถามว่าโค้ดส่วนนี้ทำงานอย่างไร หรือทำไมถึงเขียนแบบนี้ ให้ใช้ [`how`]({{PSTACK_ROOT_URI}}/skills/how/SKILL.md), [`why`]({{PSTACK_ROOT_URI}}/skills/why/SKILL.md) หรือ [`teach`]({{PSTACK_ROOT_URI}}/skills/teach/SKILL.md)
