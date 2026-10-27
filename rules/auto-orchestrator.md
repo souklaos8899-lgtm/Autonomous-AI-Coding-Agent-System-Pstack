@@ -38,8 +38,10 @@
    - ใช้ [`swarm`]({{PSTACK_ROOT_URI}}/skills/swarm/SKILL.md) เมื่อต้องกระจาย Subagents ไปทำหลายส่วนพร้อมกัน
    - ใช้ [`arena`]({{PSTACK_ROOT_URI}}/skills/arena/SKILL.md) เมื่อต้องการเปรียบเทียบแนวทางแก้ปัญหาหลายแบบแล้วเลือกสิ่งที่ดีที่สุด
 
-6. **งานตรวจสอบคุณภาพ ความปลอดภัย และก่อนส่งมอบ (`Review, Security & Verification`):**
-   - สำหรับการรีวิวโค้ดหรือหาช่องโหว่ทั่วไป ให้ใช้ [`interrogate`]({{PSTACK_ROOT_URI}}/skills/interrogate/SKILL.md)
+6. **งานตรวจสอบคุณภาพ ความปลอดภัย และคู่หูตรวจโค้ดก่อนส่งมอบ (`Mandatory Pair Review, Security & Verification`):**
+   - **บังคับใช้ระบบคู่หูคุยตรวจโค้ด (`Coder ↔ Reviewer` Pair Programming) ทุกครั้งที่มีการเขียนหรือแก้ไขโค้ด:**
+     เมื่อเขียนหรือแก้โค้ดเสร็จ ห้ามส่งงานให้ผู้ใช้ทันที ต้องเรียกสกิล [`pair-review`](./custom-skills/pair-review/SKILL.md) โดยแตก **Reviewer Subagent** (`invoke_subagent` / `Task`) มาตรวจไฟล์ที่แก้และคุยโต้ตอบตีกลับ (`send_message`) จนกว่า Reviewer จะอนุมัติ (`APPROVED` สูงสุดไม่เกิน 3 รอบ) พร้อมสรุปผลการคุยกันในหัวข้อ `🤝 Pair Review (Coder ↔ Reviewer)` ให้ผู้ใช้เห็นเสมอ
+   - สำหรับการรีวิวโค้ดเชิงลึกหรือหาช่องโหว่ทั่วไป ให้ใช้ [`interrogate`]({{PSTACK_ROOT_URI}}/skills/interrogate/SKILL.md)
    - สำหรับงานที่เกี่ยวกับความปลอดภัย (Auth, Login, สิทธิ์ RBAC, การอัปโหลดไฟล์, ระบบการเงิน, หรือตรวจช่องโหว่ OWASP) ให้เรียกใช้สกิล [`security-audit`](./custom-skills/security-audit/SKILL.md) พร้อมแตก Security Subagent (`Model: "pro"`) มาตรวจสอบและเขียนโค้ดป้องกันเสมอ
    - สำหรับโค้ด TypeScript ให้ยึดตาม [`typescript-best-practices`]({{PSTACK_ROOT_URI}}/skills/typescript-best-practices/SKILL.md) และ [`principle-type-system-discipline`]({{PSTACK_ROOT_URI}}/skills/principle-type-system-discipline/SKILL.md)
    - ลบคอมเมนต์ขยะที่ไม่จำเป็นตาม [`no-comments`]({{PSTACK_ROOT_URI}}/skills/no-comments/SKILL.md) และ [`deslop`](./custom-skills/deslop/SKILL.md)

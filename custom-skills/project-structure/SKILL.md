@@ -95,3 +95,4 @@ When reorganizing an existing codebase:
 2. **Check Impact (`/blast-radius`):** Identify path aliases (`tsconfig.json`, `package.json`, `go.mod`, Dockerfiles, CI scripts) affected by moving files.
 3. **Move & Update Imports Atomically:** Move files, update all import paths and barrel exports, and delete empty directories (`principle-subtract-before-you-add`).
 4. **Verify Build & Tests (`principle-prove-it-works`):** Run the compiler/typechecker and test suite to prove zero broken imports remain.
+
