@@ -27,6 +27,7 @@ AGY_AGENTS_MD="$AGY_CONFIG_DIR/AGENTS.md"
 AGENTS_DIR="$HOME/.agents"
 AGENTS_SKILLS_DIR="$AGENTS_DIR/skills"
 PSTACK_MODELS_MD="$AGENTS_DIR/pstack-models.md"
+LEARNED_LESSONS_MD="$AGENTS_DIR/learned-lessons.md"
 
 CURSOR_RULES_DIR="$HOME/.cursor/rules"
 CURSOR_SKILLS_DIR="$HOME/.cursor/skills"
@@ -80,6 +81,20 @@ architect runners: pro, flash
 interrogate reviewers: pro, flash
 EOF
   fi
+  if [[ ! -f "$LEARNED_LESSONS_MD" ]]; then
+    cat > "$LEARNED_LESSONS_MD" << 'EOF'
+# Local Learned Lessons (Private Per-Machine Memory)
+# This file lives in ~/.agents/learned-lessons.md on your local machine and is NEVER pushed to GitHub.
+
+## 1. User Preferences & Workflow
+
+## 2. Architecture & Tech Stack Conventions
+
+## 3. Bug & Pitfall Prevention (Caught by Pair Review / Debugging)
+
+## 4. Security & Boundary Rules
+EOF
+  fi
 }
 
 render_rule_body() {
@@ -88,6 +103,8 @@ render_rule_body() {
     -e "s|{{PSTACK_ROOT_PATH}}|${PSTACK_ROOT}|g" \
     -e "s|{{MODELS_CONFIG_URI}}|file://${PSTACK_MODELS_MD}|g" \
     -e "s|{{MODELS_CONFIG_PATH}}|${PSTACK_MODELS_MD}|g" \
+    -e "s|{{LEARNED_LESSONS_URI}}|file://${LEARNED_LESSONS_MD}|g" \
+    -e "s|{{LEARNED_LESSONS_PATH}}|${LEARNED_LESSONS_MD}|g" \
     "$MASTER_RULE_FILE"
 }
 

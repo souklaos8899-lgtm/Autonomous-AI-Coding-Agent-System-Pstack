@@ -38,6 +38,7 @@ $AgyAgentsMd      = Join-Path $AgyConfigDir "AGENTS.md"
 $AgentsDir        = Join-Path $HOME ".agents"
 $AgentsSkillsDir  = Join-Path $AgentsDir "skills"
 $PstackModelsMd   = Join-Path $AgentsDir "pstack-models.md"
+$LearnedLessonsMd = Join-Path $AgentsDir "learned-lessons.md"
 
 $CursorRulesDir   = Join-Path $HOME ".cursor\rules"
 $CursorSkillsDir  = Join-Path $HOME ".cursor\skills"
@@ -74,7 +75,7 @@ function Ensure-PstackInstalled {
 
     # Ensure default ~/.agents/pstack-models.md exists for new users
     $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
-    $defaultModelsBody = @"
+    $defaultModelsBody = @'
 # pstack model configuration. One line per role. Delete a line to fall back to the skill default.
 # Strictly uses only Gemini models (`pro` = Gemini Pro / Argon, `flash` = Gemini Flash). Do NOT use Claude models.
 # budget: large (xhigh)
@@ -95,13 +96,30 @@ arena cross-judge pool: pro, flash
 swarm workers: flash
 architect runners: pro, flash
 interrogate reviewers: pro, flash
-"@
+'@
     if (-not (Test-Path $AgentsDir)) {
         New-Item -ItemType Directory -Path $AgentsDir -Force | Out-Null
     }
     if (-not (Test-Path $PstackModelsMd)) {
         [System.IO.File]::WriteAllText($PstackModelsMd, $defaultModelsBody, $utf8NoBom)
         Write-Host "  -> Created default model config at $PstackModelsMd" -ForegroundColor Green
+    }
+    if (-not (Test-Path $LearnedLessonsMd)) {
+        $defaultLessonsBody = @'
+# Local Learned Lessons (Private Per-Machine Memory)
+# This file lives in ~/.agents/learned-lessons.md on your local machine and is NEVER pushed to GitHub.
+
+## 1. User Preferences & Workflow
+- [Initial] Use only Gemini Pro/Argon (`pro`) and Gemini Flash (`flash`) for subagents in Antigravity -> Prevents exhausting single-prompt Claude quotas.
+
+## 2. Architecture & Tech Stack Conventions
+
+## 3. Bug & Pitfall Prevention (Caught by Pair Review / Debugging)
+
+## 4. Security & Boundary Rules
+'@
+        [System.IO.File]::WriteAllText($LearnedLessonsMd, $defaultLessonsBody, $utf8NoBom)
+        Write-Host "  -> Initialized local private memory at $LearnedLessonsMd" -ForegroundColor Green
     }
     if (-not (Test-Path $CursorRulesDir)) {
         New-Item -ItemType Directory -Path $CursorRulesDir -Force | Out-Null
@@ -122,14 +140,17 @@ function Get-RenderedRuleBody {
     $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
     $rawRule = [System.IO.File]::ReadAllText($MasterRuleFile, $utf8NoBom)
 
-    $pstackForward = $PstackRoot.Replace('\', '/')
-    $modelsForward = $PstackModelsMd.Replace('\', '/')
+    $pstackForward  = $PstackRoot.Replace('\', '/')
+    $modelsForward  = $PstackModelsMd.Replace('\', '/')
+    $lessonsForward = $LearnedLessonsMd.Replace('\', '/')
 
     $rendered = $rawRule `
         -replace '\{\{PSTACK_ROOT_URI\}\}', "file:///$pstackForward" `
         -replace '\{\{PSTACK_ROOT_PATH\}\}', $pstackForward `
         -replace '\{\{MODELS_CONFIG_URI\}\}', "file:///$modelsForward" `
-        -replace '\{\{MODELS_CONFIG_PATH\}\}', $modelsForward
+        -replace '\{\{MODELS_CONFIG_PATH\}\}', $modelsForward `
+        -replace '\{\{LEARNED_LESSONS_URI\}\}', "file:///$lessonsForward" `
+        -replace '\{\{LEARNED_LESSONS_PATH\}\}', $lessonsForward
 
     return $rendered
 }
@@ -332,6 +353,14 @@ function Show-Status {
     # 5. Check Auto-Update Scheduled Task / Startup Hook
     $taskExists = ($null -ne (Get-ScheduledTask -TaskName $ScheduledTaskName -ErrorAction SilentlyContinue)) -or (Test-Path $StartupVbsFile)
     Write-Host ("[8] Auto-Update Scheduler    : {0}" -f $(if ($taskExists) { "ACTIVE (Background update daily & at logon)" } else { "INACTIVE" })) -ForegroundColor $(if ($taskExists) { "Green" } else { "Yellow" })
+
+    # 6. Check Local Learned Memory (~/.agents/learned-lessons.md)
+    if (Test-Path $LearnedLessonsMd) {
+        $lessonCount = @(Select-String -Path $LearnedLessonsMd -Pattern "^- \[" -ErrorAction SilentlyContinue).Count
+        Write-Host ("[9] Local Learned Memory     : ACTIVE ({0} lessons in {1})" -f $lessonCount, $LearnedLessonsMd) -ForegroundColor Green
+    } else {
+        Write-Host "[9] Local Learned Memory     : INACTIVE" -ForegroundColor Yellow
+    }
 
     Write-Host "`nQuick Commands:" -ForegroundColor Gray
     Write-Host "  .\pstack-ctl.ps1 install                 # First-time setup (clones pstack, enables auto-mode & auto-update)" -ForegroundColor Gray
